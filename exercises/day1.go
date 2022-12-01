@@ -2,6 +2,7 @@ package exercises
 
 import (
 	file_reader "playground/advent_of_code_2022/helpers"
+	"sort"
 	"strconv"
 )
 
@@ -29,6 +30,31 @@ func (e *expedition) addElf() *elf {
 	new_elf := newElf()
 	e.elves = append(e.elves, new_elf)
 	return new_elf
+}
+
+type By func(e1, e2 *elf) bool
+
+func (by By) Sort(elves []*elf) {
+	s := &elfSorter{
+		elves: elves,
+		by:    by,
+	}
+	sort.Sort(s)
+}
+
+type elfSorter struct {
+	elves []*elf
+	by    func(e1, e2 *elf) bool
+}
+
+func (s *elfSorter) Len() int {
+	return len(s.elves)
+}
+func (s *elfSorter) Swap(i, j int) {
+	s.elves[i], s.elves[j] = s.elves[j], s.elves[i]
+}
+func (s *elfSorter) Less(i, j int) bool {
+	return s.by(s.elves[i], s.elves[j])
 }
 
 func day1(filepath string) *expedition {
@@ -60,4 +86,26 @@ func Part1(filepath string) int {
 	}
 
 	return most_calories
+}
+
+func Part2(filepath string) int {
+	expedition := day1(filepath)
+
+	totalDecending := func(e1, e2 *elf) bool {
+		return e1.total > e2.total
+	}
+	By(totalDecending).Sort(expedition.elves)
+
+	total := 0
+	count := 0
+	for _, each_elf := range expedition.elves {
+		if count >= 3 {
+			break
+		}
+
+		total += each_elf.total
+		count++
+	}
+
+	return total
 }
