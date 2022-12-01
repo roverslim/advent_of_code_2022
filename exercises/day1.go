@@ -78,14 +78,23 @@ func day1(filepath string) *expedition {
 func Part1(filepath string) int {
 	expedition := day1(filepath)
 
-	most_calories := 0
+	totalDecending := func(e1, e2 *elf) bool {
+		return e1.total > e2.total
+	}
+	By(totalDecending).Sort(expedition.elves)
+
+	total := 0
+	count := 0
 	for _, each_elf := range expedition.elves {
-		if each_elf.total > most_calories {
-			most_calories = each_elf.total
+		if count >= 1 {
+			break
 		}
+
+		total += each_elf.total
+		count++
 	}
 
-	return most_calories
+	return total
 }
 
 func Part2(filepath string) int {
