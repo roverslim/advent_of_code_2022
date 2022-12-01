@@ -31,15 +31,13 @@ func (e *expedition) addElf() *elf {
 	return new_elf
 }
 
-func Day1(filepath string) int {
+func day1(filepath string) *expedition {
 	text := file_reader.Read(filepath)
 
 	expedition := newExpedition()
 	current_elf := expedition.addElf()
 
 	for _, each_ln := range text {
-		// fmt.Println(each_ln)
-
 		if len(each_ln) > 0 {
 			food, _ := strconv.Atoi(each_ln)
 			current_elf.updateCalories(food)
@@ -48,13 +46,17 @@ func Day1(filepath string) int {
 		}
 	}
 
-	// fmt.Printf("%+v\n", *expedition)
+	return expedition
+}
+
+func Part1(filepath string) int {
+	expedition := day1(filepath)
+
 	most_calories := 0
 	for _, each_elf := range expedition.elves {
 		if each_elf.total > most_calories {
 			most_calories = each_elf.total
 		}
-		// fmt.Printf("%+v\n", *each_elf)
 	}
 
 	return most_calories
