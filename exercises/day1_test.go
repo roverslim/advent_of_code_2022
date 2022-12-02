@@ -25,3 +25,11 @@ func TestDay1Part2Sample(t *testing.T) {
 		t.Errorf("Part2() returns %d, want %d", result, expected)
 	}
 }
+
+func TestDay1Part2(t *testing.T) {
+	expected := 212489
+	result := Part2("./day1_input.txt")
+	if result != expected {
+		t.Errorf("Part2() returns %d, want %d", result, expected)
+	}
+}
