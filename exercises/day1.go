@@ -75,7 +75,7 @@ func day1(filepath string) *expedition {
 	return expedition
 }
 
-func Part1(filepath string) int {
+func Day1Part1(filepath string) int {
 	expedition := day1(filepath)
 
 	totalDecending := func(e1, e2 *elf) bool {
@@ -97,7 +97,7 @@ func Part1(filepath string) int {
 	return total
 }
 
-func Part2(filepath string) int {
+func Day1Part2(filepath string) int {
 	expedition := day1(filepath)
 
 	totalDecending := func(e1, e2 *elf) bool {
