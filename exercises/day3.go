@@ -44,3 +44,43 @@ func priority(item string) int {
 
 	return 0
 }
+
+func Day3Part2(filepath string) int {
+	text := file_reader.Read(filepath)
+
+	sum := 0
+	list1 := ""
+	list2 := ""
+	list3 := ""
+	line_no := 1
+
+	for _, each_ln := range text {
+		remainder := line_no % 3
+		if remainder == 1 {
+			list1 = each_ln
+		} else if remainder == 2 {
+			list2 = each_ln
+		} else if remainder == 0 {
+			list3 = each_ln
+
+			item := matchingItem3(list1, list2, list3)
+			sum += priority(item)
+		}
+
+		line_no += 1
+	}
+
+	return sum
+}
+
+func matchingItem3(list1 string, list2 string, list3 string) string {
+	for _, each_list1_item := range list1 {
+		if strings.Contains(list2, string(each_list1_item)) {
+			if strings.Contains(list3, string(each_list1_item)) {
+				return string(each_list1_item)
+			}
+		}
+	}
+
+	return ""
+}
