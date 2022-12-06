@@ -6,30 +6,38 @@ import (
 )
 
 func Day6Part1(filepath string) []int {
+	return common(filepath, 4)
+}
+
+func Day6Part2(filepath string) []int {
+	return common(filepath, 14)
+}
+
+func common(filepath string, numDistinctChars int) []int {
 	text := file_reader.Read(filepath)
 
 	indexes := []int{}
 	for _, each_ln := range text {
-		indexes = append(indexes, startOfPacketMarker(each_ln))
+		indexes = append(indexes, startOfMarker(each_ln, numDistinctChars))
 	}
 
 	return indexes
 }
 
-func startOfPacketMarker(signal string) int {
+func startOfMarker(signal string, numDistinctChars int) int {
 	index := 0
 
 	for i := 0; i < len(signal); i++ {
-		marker := signal[index : index+4]
+		marker := signal[index : index+numDistinctChars]
 
 		if !repeatedCharacters(marker) {
-			return index + 4
+			return index + numDistinctChars
 		}
 
 		index++
 	}
 
-	return index + 4
+	return index + numDistinctChars
 }
 
 func repeatedCharacters(marker string) bool {
