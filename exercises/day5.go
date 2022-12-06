@@ -8,6 +8,14 @@ import (
 )
 
 func Day5Part1(filepath string) string {
+	return shared(filepath, false)
+}
+
+func Day5Part2(filepath string) string {
+	return shared(filepath, true)
+}
+
+func shared(filepath string, multipleCratesAtOnce bool) string {
 	text := file_reader.Read(filepath)
 
 	stackLines := []string{}
@@ -19,7 +27,7 @@ func Day5Part1(filepath string) string {
 			index := len(stackLines) - 1
 			previousLine := stackLines[index]
 			numStacks := parseNumStacks(previousLine)
-			supplyStack = newSupplyStack(numStacks)
+			supplyStack = newSupplyStack(numStacks, multipleCratesAtOnce)
 			parseStacks(stackLines[:index], supplyStack)
 			parsedStackLines = true
 		} else if !parsedStackLines {
@@ -41,13 +49,20 @@ func parseRearrangementProcedure(line string, supplyStack *supplyStack) {
 	times, _ := strconv.Atoi(split[1])
 	from, _ := strconv.Atoi(split[3])
 	to, _ := strconv.Atoi(split[5])
-
-	for i := 0; i < times; i++ {
-		crate := supplyStack.pop(from - 1)
-		supplyStack.push(crate, to-1)
-		// fmt.Printf(".")
-	}
 	// fmt.Printf("%d %d %d\n", times, from, to)
+
+	if supplyStack.multipleCratesAtOnce {
+		crates := supplyStack.popN(from-1, times)
+		// fmt.Printf("%s\n", crates)
+		// fmt.Printf("during %+v\n", *supplyStack)
+		supplyStack.push(crates, to-1)
+	} else {
+		for i := 0; i < times; i++ {
+			crate := supplyStack.pop(from - 1)
+			supplyStack.push([]string{crate}, to-1)
+			// fmt.Printf(".")
+		}
+	}
 }
 
 func parseStacks(lines []string, supplyStack *supplyStack) {
@@ -72,14 +87,16 @@ func parseStacks(lines []string, supplyStack *supplyStack) {
 }
 
 type supplyStack struct {
-	numStacks int
-	stacks    map[int][]string
+	numStacks            int
+	stacks               map[int][]string
+	multipleCratesAtOnce bool
 }
 
-func newSupplyStack(numStacks int) *supplyStack {
+func newSupplyStack(numStacks int, multipleCratesAtOnce bool) *supplyStack {
 	return &supplyStack{
-		numStacks: numStacks,
-		stacks:    map[int][]string{},
+		numStacks:            numStacks,
+		stacks:               map[int][]string{},
+		multipleCratesAtOnce: multipleCratesAtOnce,
 	}
 }
 func (s *supplyStack) addCrate(crate string, stack int) {
@@ -90,8 +107,15 @@ func (s *supplyStack) pop(stack int) string {
 	s.stacks[stack] = s.stacks[stack][1:]
 	return head
 }
-func (s *supplyStack) push(crate string, stack int) {
-	s.stacks[stack] = append([]string{crate}, s.stacks[stack]...)
+func (s *supplyStack) popN(stack int, numCrates int) []string {
+	head := s.stacks[stack][:numCrates]
+	s.stacks[stack] = s.stacks[stack][numCrates:]
+	return head
+}
+func (s *supplyStack) push(crates []string, stack int) {
+	var dst []string
+	dst = append(dst, crates...)
+	s.stacks[stack] = append(dst, s.stacks[stack]...)
 }
 func (s *supplyStack) cratesOnTop() string {
 	top := ""
