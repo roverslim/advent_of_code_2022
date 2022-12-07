@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	fmt.Println(exercises.Day6Part2("exercises/day6_sample_input.txt"))
-	fmt.Println(exercises.Day6Part2("exercises/day6_input.txt"))
+	fmt.Println(exercises.Day7Part1("exercises/day7_sample_input.txt"))
+	// fmt.Println(exercises.Day7Part2("exercises/day7_input.txt"))
 }
