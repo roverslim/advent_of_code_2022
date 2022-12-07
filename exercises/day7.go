@@ -66,8 +66,22 @@ type directory struct {
 	parentDir *directory
 }
 
+func (d *directory) totalSize() int {
+	totalSize := 0
+
+	for _, each_file := range d.files {
+		totalSize += each_file.size
+	}
+
+	for _, each_dir := range d.directories {
+		totalSize += each_dir.totalSize()
+	}
+
+	return totalSize
+}
 func (d *directory) prettyPrint() {
 	fmt.Printf("\tdir %+v\n", *d)
+	fmt.Printf("\tsize %d\n", d.totalSize())
 
 	for _, each_file := range d.files {
 		each_file.prettyPrint()
