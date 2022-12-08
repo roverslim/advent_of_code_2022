@@ -2,6 +2,7 @@ package exercises
 
 import (
 	file_reader "playground/advent_of_code_2022/helpers"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -21,20 +22,13 @@ func newFileSystem() fileSystem {
 		currentDirectory: &rootDir,
 	}
 }
-func (fs *fileSystem) sumOfTotalSizes() int {
+func (fs *fileSystem) allTotalSizes() []int {
 	allSizes := []int{}
+
 	allSizes = append(allSizes, fs.rootDirectory.totalSize())
 	allSizes = append(allSizes, fs.rootDirectory.allTotalSizes()...)
 
-	sum := 0
-	for _, each_size := range allSizes {
-		if each_size <= 100000 {
-			sum += each_size
-		}
-	}
-
-	// fmt.Printf("%+v\n", allSizes)
-	return sum
+	return allSizes
 }
 func (fs *fileSystem) prettyPrint() {
 	// fmt.Printf("\t%+v\n", *fs)
@@ -125,7 +119,7 @@ func (f *file) prettyPrint() {
 	// fmt.Printf("\t\tfile %+v\n", *f)
 }
 
-func Day7Part1(filepath string) int {
+func day7(filepath string) []int {
 	text := file_reader.Read(filepath)
 
 	fs := newFileSystem()
@@ -133,16 +127,42 @@ func Day7Part1(filepath string) int {
 		parse(each_ln, &fs)
 	}
 
-	fs.prettyPrint()
-	return fs.sumOfTotalSizes()
+	// fs.prettyPrint()
+	return fs.allTotalSizes()
+}
+
+func Day7Part1(filepath string) int {
+	allSizes := day7(filepath)
+
+	sum := 0
+	for _, each_size := range allSizes {
+		if each_size <= 100000 {
+			sum += each_size
+		}
+	}
+
+	// fmt.Printf("%+v\n", allSizes)
+	return sum
+}
+
+func Day7Part2(filepath string) int {
+	allSizes := day7(filepath)
+	sort.Ints(allSizes)
+
+	availableFreeSpace := 70000000 - allSizes[len(allSizes)-1]
+	for i := 0; i < len(allSizes); i++ {
+		if availableFreeSpace+allSizes[i] >= 30000000 {
+			return allSizes[i]
+		}
+	}
+
+	return -1
 }
 
 func parseCommand(input string, fs *fileSystem) {
 	args := strings.Split(input, " ")
 	if args[1] == "cd" {
 		move(args[2], fs)
-	} else {
-		// fmt.Println("list")
 	}
 }
 
