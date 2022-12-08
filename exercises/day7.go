@@ -1,7 +1,6 @@
 package exercises
 
 import (
-	"fmt"
 	file_reader "playground/advent_of_code_2022/helpers"
 	"strconv"
 	"strings"
@@ -22,8 +21,23 @@ func newFileSystem() fileSystem {
 		currentDirectory: &rootDir,
 	}
 }
+func (fs *fileSystem) sumOfTotalSizes() int {
+	allSizes := []int{}
+	allSizes = append(allSizes, fs.rootDirectory.totalSize())
+	allSizes = append(allSizes, fs.rootDirectory.allTotalSizes()...)
+
+	sum := 0
+	for _, each_size := range allSizes {
+		if each_size <= 100000 {
+			sum += each_size
+		}
+	}
+
+	// fmt.Printf("%+v\n", allSizes)
+	return sum
+}
 func (fs *fileSystem) prettyPrint() {
-	fmt.Printf("\t%+v\n", *fs)
+	// fmt.Printf("\t%+v\n", *fs)
 	fs.rootDirectory.prettyPrint()
 }
 func (fs *fileSystem) addDirectory(name string) {
@@ -79,9 +93,19 @@ func (d *directory) totalSize() int {
 
 	return totalSize
 }
+func (d *directory) allTotalSizes() []int {
+	totalSize := []int{}
+
+	for _, each_dir := range d.directories {
+		totalSize = append(totalSize, each_dir.totalSize())
+		totalSize = append(totalSize, each_dir.allTotalSizes()...)
+	}
+
+	return totalSize
+}
 func (d *directory) prettyPrint() {
-	fmt.Printf("\tdir %+v\n", *d)
-	fmt.Printf("\tsize %d\n", d.totalSize())
+	// fmt.Printf("\tdir %+v\n", *d)
+	// fmt.Printf("\tsize %d\n", d.totalSize())
 
 	for _, each_file := range d.files {
 		each_file.prettyPrint()
@@ -98,7 +122,7 @@ type file struct {
 }
 
 func (f *file) prettyPrint() {
-	fmt.Printf("\t\tfile %+v\n", *f)
+	// fmt.Printf("\t\tfile %+v\n", *f)
 }
 
 func Day7Part1(filepath string) int {
@@ -110,7 +134,7 @@ func Day7Part1(filepath string) int {
 	}
 
 	fs.prettyPrint()
-	return 0
+	return fs.sumOfTotalSizes()
 }
 
 func parseCommand(input string, fs *fileSystem) {
@@ -118,7 +142,7 @@ func parseCommand(input string, fs *fileSystem) {
 	if args[1] == "cd" {
 		move(args[2], fs)
 	} else {
-		fmt.Println("list")
+		// fmt.Println("list")
 	}
 }
 
@@ -134,24 +158,24 @@ func parseOutput(input string, fs *fileSystem) {
 
 func isDirectory(name string, fs *fileSystem) {
 	fs.addDirectory(name)
-	fmt.Printf("directory %s\n", name)
+	// fmt.Printf("directory %s\n", name)
 }
 
 func isFile(size int, name string, fs *fileSystem) {
 	fs.addFile(name, size)
-	fmt.Printf("file %s with size %d\n", name, size)
+	// fmt.Printf("file %s with size %d\n", name, size)
 }
 
 func move(input string, fs *fileSystem) {
 	if input == ".." {
 		fs.cdUp()
-		fmt.Println("Move out one level up (cd ..)")
+		// fmt.Println("Move out one level up (cd ..)")
 	} else if input == "/" {
 		fs.cdToRoot()
-		fmt.Println("Move to the outermost directory")
+		// fmt.Println("Move to the outermost directory")
 	} else {
 		fs.cdInto(input)
-		fmt.Printf("Move in one level down (cd %s)\n", input)
+		// fmt.Printf("Move in one level down (cd %s)\n", input)
 	}
 }
 
