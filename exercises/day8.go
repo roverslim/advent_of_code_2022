@@ -16,10 +16,7 @@ func Day8Part1(filepath string) int {
 		grid.addTreeRow(trees)
 	}
 
-	grid.prettyPrint()
-	grid.visibleTreeCount()
-
-	return 0
+	return grid.visibleTreeCount()
 }
 
 func parseTreeHeights(line string) []int {
@@ -36,15 +33,21 @@ func parseTreeHeights(line string) []int {
 
 type treeGrid struct {
 	heights [][]int
+	x_max   int
+	y_max   int
 }
 
 func newTreeGrid() *treeGrid {
 	return &treeGrid{
 		heights: [][]int{},
+		x_max:   0,
+		y_max:   0,
 	}
 }
 func (g *treeGrid) addTreeRow(treeHeights []int) {
 	g.heights = append(g.heights, treeHeights)
+	g.x_max = len(treeHeights)
+	g.y_max = len(g.heights)
 }
 func (g *treeGrid) prettyPrint() {
 	for _, each_row := range g.heights {
@@ -52,19 +55,66 @@ func (g *treeGrid) prettyPrint() {
 	}
 }
 func (g *treeGrid) visibleTreeCount() int {
-	// visible := [][]int{}
+	visible := [][]int{}
 
-	i_len := len(g.heights)
-	for i := 0; i < i_len; i++ {
-		j_len := len(g.heights[i])
-		for j := 0; j < j_len; j++ {
-			g.isVisible(i, j)
-			fmt.Println(g.heights[i][j])
+	for y := 0; y < len(g.heights); y++ {
+		row := []int{}
+		for x := 0; x < len(g.heights[y]); x++ {
+			if g.isHidden(x, y) {
+				row = append(row, 0)
+			} else {
+				row = append(row, 1)
+			}
+		}
+		visible = append(visible, row)
+		// fmt.Println(row)
+	}
+
+	count := 0
+	for y := 0; y < len(visible); y++ {
+		for x := 0; x < len(visible[y]); x++ {
+			if visible[y][x] == 1 {
+				count += 1
+			}
 		}
 	}
 
-	return 0
+	return count
 }
-func (g *treeGrid) isVisible(i int, j int) bool {
-	return false
+func (g *treeGrid) isHidden(x int, y int) bool {
+	if x <= 0 || y <= 0 || x >= g.x_max-1 || y >= g.y_max-1 {
+		return false
+	}
+
+	treeHeight := g.heights[y][x]
+	right := false
+	left := false
+	up := false
+	down := false
+	for i := 1; x+i < g.x_max; i++ {
+		if g.heights[y][x+i] >= treeHeight {
+			right = true
+			break
+		}
+	}
+	for i := 1; x-i >= 0; i++ {
+		if g.heights[y][x-i] >= treeHeight {
+			left = true
+			break
+		}
+	}
+	for i := 1; y+i < g.y_max; i++ {
+		if g.heights[y+i][x] >= treeHeight {
+			down = true
+			break
+		}
+	}
+	for i := 1; y-i >= 0; i++ {
+		if g.heights[y-i][x] >= treeHeight {
+			up = true
+			break
+		}
+	}
+
+	return right && left && up && down
 }
