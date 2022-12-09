@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Day8Part1(filepath string) int {
+func day8(filepath string) *treeGrid {
 	text := file_reader.Read(filepath)
 
 	grid := newTreeGrid()
@@ -16,7 +16,17 @@ func Day8Part1(filepath string) int {
 		grid.addTreeRow(trees)
 	}
 
+	return grid
+}
+
+func Day8Part1(filepath string) int {
+	grid := day8(filepath)
 	return grid.visibleTreeCount()
+}
+
+func Day8Part2(filepath string) int {
+	grid := day8(filepath)
+	return grid.highestScenicScore()
 }
 
 func parseTreeHeights(line string) []int {
@@ -117,4 +127,70 @@ func (g *treeGrid) isHidden(x int, y int) bool {
 	}
 
 	return right && left && up && down
+}
+func (g *treeGrid) scenicScore(x int, y int) int {
+	treeHeight := g.heights[y][x]
+
+	scoreRight := 0
+	scoreLeft := 0
+	scoreUp := 0
+	scoreDown := 0
+	for i := 1; x+i < g.x_max; i++ {
+		if g.heights[y][x+i] >= treeHeight {
+			scoreRight += 1
+			break
+		} else {
+			scoreRight += 1
+		}
+	}
+	for i := 1; x-i >= 0; i++ {
+		if g.heights[y][x-i] >= treeHeight {
+			scoreLeft += 1
+			break
+		} else {
+			scoreLeft += 1
+		}
+	}
+	for i := 1; y+i < g.y_max; i++ {
+		if g.heights[y+i][x] >= treeHeight {
+			scoreDown += 1
+			break
+		} else {
+			scoreDown += 1
+		}
+	}
+	for i := 1; y-i >= 0; i++ {
+		if g.heights[y-i][x] >= treeHeight {
+			scoreUp += 1
+			break
+		} else {
+			scoreUp += 1
+		}
+	}
+
+	return scoreLeft * scoreRight * scoreUp * scoreDown
+}
+func (g *treeGrid) highestScenicScore() int {
+	scenicScores := [][]int{}
+
+	for y := 0; y < len(g.heights); y++ {
+		row := []int{}
+		for x := 0; x < len(g.heights[y]); x++ {
+			row = append(row, g.scenicScore(x, y))
+		}
+		scenicScores = append(scenicScores, row)
+		// fmt.Println(row)
+	}
+
+	highestScore := 0
+	for y := 0; y < len(scenicScores); y++ {
+		for x := 0; x < len(scenicScores[y]); x++ {
+			currentScore := scenicScores[y][x]
+			if currentScore > highestScore {
+				highestScore = currentScore
+			}
+		}
+	}
+
+	return highestScore
 }
