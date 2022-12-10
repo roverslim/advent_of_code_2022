@@ -6,6 +6,38 @@ import (
 	"strings"
 )
 
+func Day10Part2(filepath string) string {
+	text := file_reader.Read(filepath)
+
+	pc := newProgramCounter()
+	for _, each_line := range text {
+		parseProgram(each_line, pc)
+	}
+
+	crt := []string{}
+	for i := 0; i < 40*6; i++ {
+		sprite := pc.cycles[i]
+		// fmt.Printf("cycle %d, sprite %d-%d", i%40, sprite-1, sprite+1)
+		crt_i := i % 40
+		if sprite-1 <= crt_i && crt_i <= sprite+1 {
+			// fmt.Printf(" #\n")
+			crt = append(crt, "#")
+		} else {
+			// fmt.Printf(" .\n")
+			crt = append(crt, ".")
+		}
+	}
+
+	// fmt.Println(crt[:40])
+	// fmt.Println(crt[40:80])
+	// fmt.Println(crt[80:120])
+	// fmt.Println(crt[120:160])
+	// fmt.Println(crt[160:200])
+	// fmt.Println(crt[200:])
+
+	return strings.Join(crt, "")
+}
+
 func Day10Part1(filepath string) int {
 	text := file_reader.Read(filepath)
 
