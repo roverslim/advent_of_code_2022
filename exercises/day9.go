@@ -2,6 +2,7 @@ package exercises
 
 import (
 	"fmt"
+	"math"
 	file_reader "playground/advent_of_code_2022/helpers"
 	"strconv"
 	"strings"
@@ -23,16 +24,44 @@ func newropeBridge() *ropeBridge {
 	}
 }
 func (rb *ropeBridge) moveRight(steps int) {
-	rb.head.x += steps
+	for i := 0; i < steps; i++ {
+		rb.head.x += 1
+
+		if rb.head.x-rb.tail.x >= 2 && int(math.Abs(float64(rb.head.y-rb.tail.y))) >= 1 {
+			rb.tail.y = rb.head.y
+		}
+		rb.tail.x = rb.head.x - 1
+	}
 }
 func (rb *ropeBridge) moveUp(steps int) {
-	rb.head.y += steps
+	for i := 0; i < steps; i++ {
+		rb.head.y += 1
+
+		if rb.head.y-rb.tail.y >= 2 && int(math.Abs(float64(rb.head.x-rb.tail.x))) >= 1 {
+			rb.tail.x = rb.head.x
+		}
+		rb.tail.y = rb.head.y - 1
+	}
 }
 func (rb *ropeBridge) moveLeft(steps int) {
-	rb.head.x -= steps
+	for i := 0; i < steps; i++ {
+		rb.head.x -= 1
+
+		if rb.tail.x-rb.head.x >= 2 && int(math.Abs(float64(rb.head.y-rb.tail.y))) >= 1 {
+			rb.tail.y = rb.head.y
+		}
+		rb.tail.x = rb.head.x + 1
+	}
+
 }
 func (rb *ropeBridge) moveDown(steps int) {
-	rb.head.y -= steps
+	for i := 0; i < steps; i++ {
+		rb.head.y -= 1
+
+		if rb.tail.y-rb.head.y >= 2 && int(math.Abs(float64(rb.head.x-rb.tail.x))) >= 1 {
+			rb.tail.x = rb.head.x
+		}
+	}
 }
 
 func Day9Part1(filepath string) int {
@@ -41,9 +70,10 @@ func Day9Part1(filepath string) int {
 	rb := newropeBridge()
 	for _, each_line := range text {
 		parseMotion(each_line, rb)
-	}
 
-	fmt.Printf("%+v\n", rb.head)
+		fmt.Printf("%+v ", rb.head)
+		fmt.Printf("%+v\n", rb.tail)
+	}
 
 	return 0
 }
