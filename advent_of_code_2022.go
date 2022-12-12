@@ -7,5 +7,5 @@ import (
 
 func main() {
 	fmt.Println(exercises.Day9Part1("exercises/day9_sample_input.txt"))
-	// fmt.Println(exercises.Day9Part1("exercises/day9_input.txt"))
+	fmt.Println(exercises.Day9Part1("exercises/day9_input.txt"))
 }
