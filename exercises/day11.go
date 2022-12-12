@@ -10,23 +10,43 @@ import (
 func Day11Part1(filepath string) int {
 	text := file_reader.Read(filepath)
 
+	mim := newMonkeyInTheMiddle()
+
 	batch := []string{}
-	monkeys := []*monkey{}
 	for _, each_line := range text {
 		if len(each_line) == 0 {
-			monkeys = append(monkeys, parseMonkey(batch))
+			mim.addMonkey(parseMonkey(batch))
 			batch = []string{}
 		} else {
 			batch = append(batch, each_line)
 		}
 	}
-	monkeys = append(monkeys, parseMonkey(batch))
+	mim.addMonkey(parseMonkey(batch))
 
-	for _, each_monkey := range monkeys {
+	mim.runRound()
+	for _, each_monkey := range mim.monkeys {
 		fmt.Printf("%+v\n", *each_monkey)
 	}
 
 	return 0
+}
+
+type monkeyInTheMiddle struct {
+	monkeys []*monkey
+}
+
+func newMonkeyInTheMiddle() *monkeyInTheMiddle {
+	return &monkeyInTheMiddle{
+		monkeys: []*monkey{},
+	}
+}
+func (mim *monkeyInTheMiddle) addMonkey(monkey *monkey) {
+	mim.monkeys = append(mim.monkeys, monkey)
+}
+func (mim *monkeyInTheMiddle) runRound() {
+	for _, each_monkey := range mim.monkeys {
+		each_monkey.takeTurn()
+	}
 }
 
 func parseMonkey(lines []string) *monkey {
@@ -89,4 +109,23 @@ type monkey struct {
 	divisible_by int
 	if_true      int
 	if_false     int
+}
+
+func (m *monkey) takeTurn() {
+	fmt.Printf("Monkey %d:\n", m.id)
+	for _, each_item := range m.items {
+		fmt.Printf("\tMonkey inspects an item with a worry level of %d\n", each_item)
+		worryLevel := m.worryLevelOnInspection(each_item)
+		fmt.Printf("\t\tWorry level is %s by %d to %d\n", m.operation, m.factor, worryLevel)
+	}
+}
+func (m *monkey) worryLevelOnInspection(item int) int {
+	switch m.operation {
+	case "+":
+		return item + m.factor
+	case "*":
+		return item * m.factor
+	}
+
+	return -1
 }
