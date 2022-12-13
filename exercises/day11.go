@@ -2,6 +2,7 @@ package exercises
 
 import (
 	"fmt"
+	"math"
 	file_reader "playground/advent_of_code_2022/helpers"
 	"strconv"
 	"strings"
@@ -15,41 +16,53 @@ func Day11Part1(filepath string) int {
 	batch := []string{}
 	for _, each_line := range text {
 		if len(each_line) == 0 {
-			mim.addMonkey(parseMonkey(batch))
+			mim.addMonkey(parseMonkey(batch, mim))
 			batch = []string{}
 		} else {
 			batch = append(batch, each_line)
 		}
 	}
-	mim.addMonkey(parseMonkey(batch))
+	mim.addMonkey(parseMonkey(batch, mim))
 
-	mim.runRound()
-	for _, each_monkey := range mim.monkeys {
-		fmt.Printf("%+v\n", *each_monkey)
+	mim.prettyPrint()
+	for i := 0; i < 20; i++ {
+		fmt.Printf("Round %d\n", i+1)
+		mim.runRound()
+		mim.prettyPrint()
 	}
 
 	return 0
 }
 
 type monkeyInTheMiddle struct {
-	monkeys []*monkey
+	monkeys    []*monkey
+	monkey_map map[int]*monkey
 }
 
 func newMonkeyInTheMiddle() *monkeyInTheMiddle {
 	return &monkeyInTheMiddle{
-		monkeys: []*monkey{},
+		monkeys:    []*monkey{},
+		monkey_map: map[int]*monkey{},
 	}
 }
 func (mim *monkeyInTheMiddle) addMonkey(monkey *monkey) {
 	mim.monkeys = append(mim.monkeys, monkey)
+	mim.monkey_map[monkey.id] = monkey
 }
 func (mim *monkeyInTheMiddle) runRound() {
 	for _, each_monkey := range mim.monkeys {
 		each_monkey.takeTurn()
 	}
 }
+func (mim *monkeyInTheMiddle) prettyPrint() {
+	fmt.Println()
+	for _, each_monkey := range mim.monkeys {
+		fmt.Printf("\t%+v\n", *each_monkey)
+	}
+	fmt.Println("\t----------")
+}
 
-func parseMonkey(lines []string) *monkey {
+func parseMonkey(lines []string, game *monkeyInTheMiddle) *monkey {
 	m := &monkey{
 		id:           -1,
 		items:        []int{},
@@ -58,6 +71,7 @@ func parseMonkey(lines []string) *monkey {
 		divisible_by: -1,
 		if_true:      -1,
 		if_false:     -1,
+		game:         game,
 	}
 
 	for _, each_line := range lines {
@@ -74,11 +88,20 @@ func parseMonkey(lines []string) *monkey {
 				item, _ := strconv.Atoi(each_item)
 				m.items = append(m.items, item)
 			}
-		} else if strings.Contains(each_line, "Operation: ") {
-			each_line = strings.Replace(each_line, "Operation: new = old ", "", 1)
-			split := strings.Split(each_line, " ")
-			m.operation = split[2]
-			factor, _ := strconv.Atoi(split[3])
+		} else if strings.Contains(each_line, "Operation: new = old + ") {
+			each_line = strings.Replace(each_line, "Operation: new = old + ", "", 1)
+			each_line = strings.ReplaceAll(each_line, " ", "")
+			m.operation = "+"
+			factor, _ := strconv.Atoi(each_line)
+			m.factor = factor
+		} else if strings.Contains(each_line, "Operation: new = old * old") {
+			m.operation = "^"
+			m.factor = 2
+		} else if strings.Contains(each_line, "Operation: new = old * ") {
+			each_line = strings.Replace(each_line, "Operation: new = old * ", "", 1)
+			each_line = strings.ReplaceAll(each_line, " ", "")
+			m.operation = "*"
+			factor, _ := strconv.Atoi(each_line)
 			m.factor = factor
 		} else if strings.Contains(each_line, "Test: ") {
 			each_line = strings.Replace(each_line, "Test: divisible by ", "", 1)
@@ -109,15 +132,29 @@ type monkey struct {
 	divisible_by int
 	if_true      int
 	if_false     int
+	game         *monkeyInTheMiddle
 }
 
 func (m *monkey) takeTurn() {
-	fmt.Printf("Monkey %d:\n", m.id)
-	for _, each_item := range m.items {
-		fmt.Printf("\tMonkey inspects an item with a worry level of %d\n", each_item)
-		worryLevel := m.worryLevelOnInspection(each_item)
-		fmt.Printf("\t\tWorry level is %s by %d to %d\n", m.operation, m.factor, worryLevel)
+	// fmt.Printf("Monkey %d:\n", m.id)
+	for _, worryLevel := range m.items {
+		// fmt.Printf("\tMonkey inspects an item with a worry level of %d\n", worryLevel)
+		worryLevel = m.worryLevelOnInspection(worryLevel)
+		// fmt.Printf("\t\tWorry level is %s by %d to %d\n", m.operation, m.factor, worryLevel)
+		worryLevel = worryLevel / 3
+		// fmt.Printf("\t\tMonkey gets bored with item. Worry level is divided by 3 to %d\n", worryLevel)
+		if worryLevel%m.divisible_by == 0 {
+			// fmt.Printf("\t\tCurrent worry level is divisible by %d\n", m.divisible_by)
+			// fmt.Printf("\t\tItem with worry level %d is thrown to monkey %d\n", worryLevel, m.if_true)
+			m.throwItemToMonkey(m.if_true, worryLevel)
+		} else {
+			// fmt.Printf("\t\tCurrent worry level is not divisible by %d\n", m.divisible_by)
+			// fmt.Printf("\t\tItem with worry level %d is thrown to monkey %d\n", worryLevel, m.if_false)
+			m.throwItemToMonkey(m.if_false, worryLevel)
+		}
+		// m.game.prettyPrint()
 	}
+	m.items = []int{}
 }
 func (m *monkey) worryLevelOnInspection(item int) int {
 	switch m.operation {
@@ -125,7 +162,12 @@ func (m *monkey) worryLevelOnInspection(item int) int {
 		return item + m.factor
 	case "*":
 		return item * m.factor
+	case "^":
+		return int(math.Pow(float64(item), float64(m.factor)))
 	}
 
 	return -1
+}
+func (m *monkey) throwItemToMonkey(id int, item int) {
+	m.game.monkey_map[id].items = append(m.game.monkey_map[id].items, item)
 }
