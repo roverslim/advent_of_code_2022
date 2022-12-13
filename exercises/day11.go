@@ -10,6 +10,14 @@ import (
 )
 
 func Day11Part1(filepath string) int {
+	return day11(filepath, true, 20)
+}
+
+func Day11Part2(filepath string) int {
+	return day11(filepath, false, 1000)
+}
+
+func day11(filepath string, isWorryLevelManageable bool, rounds int) int {
 	text := file_reader.Read(filepath)
 
 	mim := newMonkeyInTheMiddle()
@@ -26,12 +34,13 @@ func Day11Part1(filepath string) int {
 	mim.addMonkey(parseMonkey(batch, mim))
 
 	// mim.prettyPrint()
-	for i := 0; i < 20; i++ {
+	for i := 0; i < rounds; i++ {
 		// fmt.Printf("Round %d\n", i+1)
-		mim.runRound()
+		mim.runRound(isWorryLevelManageable)
 		// mim.prettyPrint()
 	}
 
+	mim.prettyPrint()
 	return mim.monkeyBusiness()
 }
 
@@ -50,9 +59,9 @@ func (mim *monkeyInTheMiddle) addMonkey(monkey *monkey) {
 	mim.monkeys = append(mim.monkeys, monkey)
 	mim.monkey_map[monkey.id] = monkey
 }
-func (mim *monkeyInTheMiddle) runRound() {
+func (mim *monkeyInTheMiddle) runRound(isWorryLevelManageable bool) {
 	for _, each_monkey := range mim.monkeys {
-		each_monkey.takeTurn()
+		each_monkey.takeTurn(isWorryLevelManageable)
 	}
 }
 func (mim *monkeyInTheMiddle) prettyPrint() {
@@ -147,14 +156,16 @@ type monkey struct {
 	inspectedItems int
 }
 
-func (m *monkey) takeTurn() {
+func (m *monkey) takeTurn(isWorryLevelManageable bool) {
 	// fmt.Printf("Monkey %d:\n", m.id)
 	for _, worryLevel := range m.items {
 		m.inspectedItems += 1
 		// fmt.Printf("\tMonkey inspects an item with a worry level of %d\n", worryLevel)
 		worryLevel = m.worryLevelOnInspection(worryLevel)
 		// fmt.Printf("\t\tWorry level is %s by %d to %d\n", m.operation, m.factor, worryLevel)
-		worryLevel = worryLevel / 3
+		if isWorryLevelManageable {
+			worryLevel = worryLevel / 3
+		}
 		// fmt.Printf("\t\tMonkey gets bored with item. Worry level is divided by 3 to %d\n", worryLevel)
 		if worryLevel%m.divisible_by == 0 {
 			// fmt.Printf("\t\tCurrent worry level is divisible by %d\n", m.divisible_by)
