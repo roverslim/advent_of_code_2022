@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	file_reader "playground/advent_of_code_2022/helpers"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -24,14 +25,14 @@ func Day11Part1(filepath string) int {
 	}
 	mim.addMonkey(parseMonkey(batch, mim))
 
-	mim.prettyPrint()
+	// mim.prettyPrint()
 	for i := 0; i < 20; i++ {
-		fmt.Printf("Round %d\n", i+1)
+		// fmt.Printf("Round %d\n", i+1)
 		mim.runRound()
-		mim.prettyPrint()
+		// mim.prettyPrint()
 	}
 
-	return 0
+	return mim.monkeyBusiness()
 }
 
 type monkeyInTheMiddle struct {
@@ -61,17 +62,27 @@ func (mim *monkeyInTheMiddle) prettyPrint() {
 	}
 	fmt.Println("\t----------")
 }
+func (mim *monkeyInTheMiddle) monkeyBusiness() int {
+	counts := []int{}
+	for _, each_monkey := range mim.monkeys {
+		counts = append(counts, each_monkey.inspectedItems)
+	}
+	sort.Ints(counts)
+
+	return counts[len(counts)-1] * counts[len(counts)-2]
+}
 
 func parseMonkey(lines []string, game *monkeyInTheMiddle) *monkey {
 	m := &monkey{
-		id:           -1,
-		items:        []int{},
-		operation:    "",
-		factor:       -1,
-		divisible_by: -1,
-		if_true:      -1,
-		if_false:     -1,
-		game:         game,
+		id:             -1,
+		items:          []int{},
+		operation:      "",
+		factor:         -1,
+		divisible_by:   -1,
+		if_true:        -1,
+		if_false:       -1,
+		game:           game,
+		inspectedItems: 0,
 	}
 
 	for _, each_line := range lines {
@@ -125,19 +136,21 @@ func parseMonkey(lines []string, game *monkeyInTheMiddle) *monkey {
 }
 
 type monkey struct {
-	id           int
-	items        []int
-	operation    string
-	factor       int
-	divisible_by int
-	if_true      int
-	if_false     int
-	game         *monkeyInTheMiddle
+	id             int
+	items          []int
+	operation      string
+	factor         int
+	divisible_by   int
+	if_true        int
+	if_false       int
+	game           *monkeyInTheMiddle
+	inspectedItems int
 }
 
 func (m *monkey) takeTurn() {
 	// fmt.Printf("Monkey %d:\n", m.id)
 	for _, worryLevel := range m.items {
+		m.inspectedItems += 1
 		// fmt.Printf("\tMonkey inspects an item with a worry level of %d\n", worryLevel)
 		worryLevel = m.worryLevelOnInspection(worryLevel)
 		// fmt.Printf("\t\tWorry level is %s by %d to %d\n", m.operation, m.factor, worryLevel)

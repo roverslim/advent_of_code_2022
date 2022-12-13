@@ -11,7 +11,7 @@ func TestDay11Part1Sample(t *testing.T) {
 }
 
 func TestDay11Part1(t *testing.T) {
-	expected := -1
+	expected := 62491
 	result := Day11Part1("./day11_input.txt")
 	if result != expected {
 		t.Errorf("Day11Part1() returns %d, want %d", result, expected)
